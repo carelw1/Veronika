@@ -56,12 +56,15 @@
         }
         
         /* Препятствия - движутся СПРАВА НАЛЕВО к коту */
-        .obstacle { position: absolute; width: 55px; height: 55px; font-size: 50px; bottom: 60px; z-index: 9; pointer-events: none; }
+        .obstacle { position: absolute; width: 45px; height: 45px; font-size: 40px; z-index: 9; pointer-events: none; }
         .obstacle-right { right: -60px; animation: moveLeftObstacle 2.8s linear forwards; }
         @keyframes moveLeftObstacle { 
             0% { right: -60px; } 
             100% { right: 100%; } 
         }
+        
+        /* Хитбокс для отладки (можно включить для проверки) */
+        .hitbox-debug { position: absolute; border: 2px solid rgba(255,0,0,0.5); background: rgba(255,0,0,0.1); pointer-events: none; z-index: 50; }
         
         /* Эффекты */
         .sparkle { position: absolute; width: 25px; height: 25px; pointer-events: none; animation: sparkleAnim 0.8s ease-out forwards; z-index: 20; }
@@ -137,7 +140,7 @@
             <div class="background-layer" id="bgLayer"></div>
             <div class="ground" id="ground"></div>
             <div class="cat-zone"></div>
-            <div class="tap-hint" id="tapHint">👆 Тапай чтобы прыгать!<br><small>Лови 🍎 избегай 🌵</small></div>
+            <div class="tap-hint" id="tapHint">👆 Тапай чтобы прыгать!<br><small>Лови 🍎 избегай 🐦🐕</small></div>
             <div class="cat-container">
                 <div class="cat cat-green" id="cat">
                     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -202,6 +205,10 @@
         let isJumping = false, isGameRunning = false, score = 0, distance = 0, startTime = null, timerInterval = null, distanceInterval = null, appleInterval = null, obstacleInterval = null, isNightMode = false, isSoundOn = true, colorMode = 0, apples = [], obstacles = [], animationId = null;
         let audioCtx;
         
+        // МАЛЕНЬКИЙ ХИТБОКС - в 2 раза меньше!
+        const CAT_HITBOX_PADDING = 35; // Было 70, стало 35 (в 2 раза меньше)
+        const OBSTACLE_HITBOX_PADDING = 15; // Маленький хитбокс для препятствий
+        
         function loadProgress() { try { const saved = localStorage.getItem('catRunnerProgress'); if (saved) { const data = JSON.parse(saved); isNightMode = data.nightMode || false; isSoundOn = data.soundOn !== false; colorMode = data.colorMode || 0; applyColorMode(); if (isNightMode) document.body.classList.add('night-mode'); }} catch(e) {} }
         function saveProgress() { try { localStorage.setItem('catRunnerProgress', JSON.stringify({ nightMode: isNightMode, soundOn: isSoundOn, colorMode })); } catch(e) {} }
         
@@ -219,9 +226,23 @@
         
         function showScorePopup(x, y) { const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = '+10'; popup.style.left = x + 'px'; popup.style.top = y + 'px'; document.body.appendChild(popup); setTimeout(() => popup.remove(), 1000); }
         
-        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-right'; obstacle.innerHTML = Math.random() > 0.5 ? '🌵' : '🪨'; const heightVar = Math.random() > 0.7 ? '100' : '60'; obstacle.style.bottom = heightVar + 'px'; scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2800); }
+        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-right'; // ПТИЦА или СОБАКА вместо кактуса
+        obstacle.innerHTML = Math.random() > 0.5 ? '🐦' : '🐕'; 
+        // Птица летит выше, собака бежит по земле
+        const isBird = Math.random() > 0.5;
+        obstacle.style.bottom = isBird ? '120px' : '60px';
+        scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2800); }
         
-        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); const collisionPadding = 30; if (catRect.left + collisionPadding < obsRect.right && catRect.right - collisionPadding > obsRect.left && catRect.top < obsRect.bottom && catRect.bottom > obsRect.top) { gameOver(); clearInterval(checkInterval); } }, 100); }
+        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); // ХИТБОКС В 2 РАЗА МЕНЬШЕ!
+        const catLeft = catRect.left + CAT_HITBOX_PADDING;
+        const catRight = catRect.right - CAT_HITBOX_PADDING;
+        const catTop = catRect.top + CAT_HITBOX_PADDING;
+        const catBottom = catRect.bottom - CAT_HITBOX_PADDING;
+        const obsLeft = obsRect.left + OBSTACLE_HITBOX_PADDING;
+        const obsRight = obsRect.right - OBSTACLE_HITBOX_PADDING;
+        const obsTop = obsRect.top + OBSTACLE_HITBOX_PADDING;
+        const obsBottom = obsRect.bottom - OBSTACLE_HITBOX_PADDING;
+        if (catLeft < obsRight && catRight > obsLeft && catTop < obsBottom && catBottom > obsTop) { gameOver(); clearInterval(checkInterval); } }, 100); }
         
         function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 800); } }
         
@@ -233,7 +254,7 @@
         
         function doJump() { if (!isGameRunning || isJumping) return; isJumping = true; cat.classList.add('jumping'); cat.classList.remove('running'); info.textContent = 'Прыжок! 🐱️'; createJumpEffect(); if (isSoundOn) playSound('jump'); vibrate([50,30,50]); setTimeout(() => { cat.classList.remove('jumping'); if (isGameRunning) cat.classList.add('running'); isJumping = false; info.textContent = 'Лови яблоки! 🍎'; }, 900); }
         
-        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1200); obstacleInterval = setInterval(spawnObstacle, 2000); info.textContent = 'Лови 🍎 избегай 🌵!'; }
+        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1200); obstacleInterval = setInterval(spawnObstacle, 2500); info.textContent = 'Лови 🍎 избегай 🐦🐕!'; }
         
         function gameOver() { isGameRunning = false; cat.classList.remove('running'); clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); if (isSoundOn) playSound('gameover'); vibrate([100,50,100,50,100]); document.getElementById('finalScore').textContent = score; document.getElementById('finalTime').textContent = timerEl.textContent; document.getElementById('finalDistance').textContent = distanceEl.textContent; gameOverScreen.classList.add('show'); }
         
