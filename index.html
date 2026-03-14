@@ -18,41 +18,55 @@
         .scene:active { background: rgba(255,255,255,0.15); }
         .scene.night-mode { background: rgba(0,0,50,0.3); }
         
-        /* Движущийся фон */
-        .background-layer { position: absolute; width: 200%; height: 100%; top: 0; left: 0; animation: scrollBackground 3s linear infinite; opacity: 0.3; }
+        /* Движущийся фон - справа налево */
+        .background-layer { position: absolute; width: 200%; height: 100%; top: 0; left: 0; animation: scrollBackground 4s linear infinite; opacity: 0.3; }
         @keyframes scrollBackground { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .bg-element { position: absolute; font-size: 24px; opacity: 0.5; }
         
-        /* Земля */
-        .ground { position: absolute; bottom: 0; left: 0; width: 200%; height: 60px; background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%); animation: scrollGround 2s linear infinite; border-top: 3px solid #81C784; }
+        /* Земля - движется справа налево */
+        .ground { position: absolute; bottom: 0; left: 0; width: 200%; height: 60px; background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%); animation: scrollGround 2.5s linear infinite; border-top: 3px solid #81C784; }
         @keyframes scrollGround { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .ground.night-mode { background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%); }
         
-        /* Котик фиксированный */
-        .cat-container { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
-        .cat { width: 100px; height: 100px; transition: transform 0.1s; }
+        /* Котик ФИКСИРОВАННЫЙ СЛЕВА */
+        .cat-container { position: absolute; bottom: 60px; left: 15%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
+        .cat { width: 110px; height: 110px; transition: transform 0.1s; }
         .cat svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); }
-        .cat.jumping { animation: jump 0.8s ease; }
+        .cat.jumping { animation: jump 0.9s ease; }
         .cat.running { animation: run 0.4s infinite; }
-        @keyframes jump { 0%{transform:translateY(0) scale(1,1)} 20%{transform:translateY(0) scale(0.9,1.1)} 40%{transform:translateY(-120px) scale(1,1)} 60%{transform:translateY(-120px) scale(1,1)} 80%{transform:translateY(0) scale(1.1,0.9)} 100%{transform:translateY(0) scale(1,1)} }
+        
+        /* ВЫСОКИЙ ПРЫЖОК */
+        @keyframes jump { 
+            0% { transform: translateY(0) scale(1,1); } 
+            10% { transform: translateY(10px) scale(0.9,1.1); }
+            40% { transform: translateY(-180px) scale(1,1); } 
+            60% { transform: translateY(-180px) scale(1,1); } 
+            80% { transform: translateY(0) scale(1.1,0.9); } 
+            100% { transform: translateY(0) scale(1,1); } 
+        }
         @keyframes run { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
         
-        /* Яблоки */
-        .apple { position: absolute; width: 40px; height: 40px; font-size: 35px; z-index: 8; pointer-events: none; }
-        .apple-top { top: -50px; animation: fallDown 3s linear forwards; }
-        .apple-bottom { bottom: 70px; animation: floatUp 3s linear forwards; }
-        @keyframes fallDown { 0% { top: -50px; opacity: 1; } 100% { top: 100%; opacity: 0; } }
-        @keyframes floatUp { 0% { bottom: 70px; opacity: 1; } 100% { bottom: 100%; opacity: 0; } }
+        /* Яблоки - движутся СПРАВА НАЛЕВО к коту */
+        .apple { position: absolute; width: 45px; height: 45px; font-size: 40px; z-index: 8; pointer-events: none; }
+        .apple-high { top: 20%; animation: moveLeft 3s linear forwards; }
+        .apple-low { bottom: 80px; animation: moveLeft 3s linear forwards; }
+        @keyframes moveLeft { 
+            0% { right: -60px; opacity: 1; } 
+            100% { right: 100%; opacity: 0; } 
+        }
         
-        /* Препятствия */
-        .obstacle { position: absolute; width: 50px; height: 50px; font-size: 45px; bottom: 60px; z-index: 9; pointer-events: none; }
-        .obstacle-left { left: -60px; animation: moveRight 2.5s linear forwards; }
-        @keyframes moveRight { 0% { left: -60px; } 100% { left: 100%; } }
+        /* Препятствия - движутся СПРАВА НАЛЕВО к коту */
+        .obstacle { position: absolute; width: 55px; height: 55px; font-size: 50px; bottom: 60px; z-index: 9; pointer-events: none; }
+        .obstacle-right { right: -60px; animation: moveLeftObstacle 2.8s linear forwards; }
+        @keyframes moveLeftObstacle { 
+            0% { right: -60px; } 
+            100% { right: 100%; } 
+        }
         
         /* Эффекты */
         .sparkle { position: absolute; width: 25px; height: 25px; pointer-events: none; animation: sparkleAnim 0.8s ease-out forwards; z-index: 20; }
         @keyframes sparkleAnim { 0%{transform:scale(0) rotate(0deg); opacity:1} 100%{transform:scale(1.5) rotate(180deg); opacity:0} }
-        .jump-effect { position: absolute; width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none; animation: jumpPulse 0.5s ease-out forwards; z-index: 15; transform: translate(-50%, -50%); bottom: 60px; left: 50%; }
+        .jump-effect { position: absolute; width: 100px; height: 100px; border: 4px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none; animation: jumpPulse 0.5s ease-out forwards; z-index: 15; transform: translate(-50%, -50%); bottom: 60px; left: 15%; }
         @keyframes jumpPulse { 0%{transform:translate(-50%,-50%) scale(0.3); opacity:1} 100%{transform:translate(-50%,-50%) scale(2); opacity:0} }
         .score-popup { position: absolute; color: #FFD700; font-size: 28px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none; animation: scoreFloat 1s ease-out forwards; z-index: 25; }
         @keyframes scoreFloat { 0%{transform:translateY(0) scale(1); opacity:1} 100%{transform:translateY(-50px) scale(1.3); opacity:0} }
@@ -66,6 +80,9 @@
         /* Подсказка */
         .tap-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.9); font-size: 18px; pointer-events: none; animation: pulse 2s infinite; text-align: center; z-index: 100; }
         @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        
+        /* Линия прыжка - показывает где кот */
+        .cat-zone { position: absolute; bottom: 60px; left: 15%; width: 80px; height: 200px; border: 2px dashed rgba(255,255,255,0.3); border-radius: 10px; pointer-events: none; transform: translateX(-50%); }
         
         /* Кнопки */
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -104,8 +121,8 @@
         .game-over p { font-size: 20px; margin: 10px 0; }
         .game-over button { margin-top: 20px; background: white; color: #764ba2; font-size: 18px; padding: 15px 40px; }
         
-        @media (max-width:400px) { .scene{height:350px} .cat{width:80px;height:80px} button{padding:10px 12px;font-size:14px} }
-        @media (max-height:500px) and (orientation:landscape) { .scene{height:250px} .cat{width:60px;height:60px} }
+        @media (max-width:400px) { .scene{height:350px} .cat{width:90px;height:90px} .cat-container{left:12%} button{padding:10px 12px;font-size:14px} }
+        @media (max-height:500px) and (orientation:landscape) { .scene{height:250px} .cat{width:70px;height:70px} }
     </style>
 </head>
 <body>
@@ -119,6 +136,7 @@
             <div class="stars" id="stars"></div>
             <div class="background-layer" id="bgLayer"></div>
             <div class="ground" id="ground"></div>
+            <div class="cat-zone"></div>
             <div class="tap-hint" id="tapHint">👆 Тапай чтобы прыгать!<br><small>Лови 🍎 избегай 🌵</small></div>
             <div class="cat-container">
                 <div class="cat cat-green" id="cat">
@@ -195,27 +213,27 @@
         
         function startDistance() { if (!distanceInterval) { distanceInterval = setInterval(() => { distance += 10; distanceEl.textContent = distance + 'м'; }, 100); } }
         
-        function spawnApple() { if (!isGameRunning) return; const apple = document.createElement('div'); apple.className = 'apple'; apple.innerHTML = '🍎'; const fromTop = Math.random() > 0.5; if (fromTop) { apple.classList.add('apple-top'); apple.style.left = (20 + Math.random() * 60) + '%'; } else { apple.classList.add('apple-bottom'); apple.style.left = (20 + Math.random() * 60) + '%'; } scene.appendChild(apple); apples.push(apple); checkAppleCollection(apple); setTimeout(() => { if (apple.parentNode) { apple.remove(); apples = apples.filter(a => a !== apple); } }, 3000); }
+        function spawnApple() { if (!isGameRunning) return; const apple = document.createElement('div'); apple.className = 'apple'; apple.innerHTML = '🍎'; const isHigh = Math.random() > 0.5; if (isHigh) { apple.classList.add('apple-high'); } else { apple.classList.add('apple-low'); } scene.appendChild(apple); apples.push(apple); checkAppleCollection(apple); setTimeout(() => { if (apple.parentNode) { apple.remove(); apples = apples.filter(a => a !== apple); } }, 3000); }
         
         function checkAppleCollection(apple) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!apple.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const appleRect = apple.getBoundingClientRect(); if (catRect.left < appleRect.right && catRect.right > appleRect.left && catRect.top < appleRect.bottom && catRect.bottom > appleRect.top) { apple.remove(); apples = apples.filter(a => a !== apple); score += 10; scoreEl.textContent = score; showScorePopup(appleRect.left, appleRect.top); createSparkles(appleRect.left, appleRect.top); if (isSoundOn) playSound('collect'); clearInterval(checkInterval); } }, 100); }
         
         function showScorePopup(x, y) { const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = '+10'; popup.style.left = x + 'px'; popup.style.top = y + 'px'; document.body.appendChild(popup); setTimeout(() => popup.remove(), 1000); }
         
-        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-left'; obstacle.innerHTML = Math.random() > 0.5 ? '🌵' : '🪨'; obstacle.style.bottom = (60 + Math.random() * 20) + 'px'; scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2500); }
+        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-right'; obstacle.innerHTML = Math.random() > 0.5 ? '🌵' : '🪨'; const heightVar = Math.random() > 0.7 ? '100' : '60'; obstacle.style.bottom = heightVar + 'px'; scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2800); }
         
-        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); if (catRect.left < obsRect.right - 20 && catRect.right > obsRect.left + 20 && catRect.top < obsRect.bottom && catRect.bottom > obsRect.top) { gameOver(); clearInterval(checkInterval); } }, 100); }
+        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); const collisionPadding = 30; if (catRect.left + collisionPadding < obsRect.right && catRect.right - collisionPadding > obsRect.left && catRect.top < obsRect.bottom && catRect.bottom > obsRect.top) { gameOver(); clearInterval(checkInterval); } }, 100); }
         
         function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 800); } }
         
-        function createJumpEffect() { const effect = document.createElement('div'); effect.className = 'jump-effect'; effect.style.left = '50%'; effect.style.bottom = '60px'; scene.appendChild(effect); setTimeout(() => effect.remove(), 500); }
+        function createJumpEffect() { const effect = document.createElement('div'); effect.className = 'jump-effect'; effect.style.left = '15%'; effect.style.bottom = '60px'; scene.appendChild(effect); setTimeout(() => effect.remove(), 500); }
         
         function playSound(type) { if (!isSoundOn) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'jump') { osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.3); } else if (type === 'collect') { osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2); } else if (type === 'gameover') { osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.5); } } catch(e) {} }
         
         function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} } }
         
-        function doJump() { if (!isGameRunning || isJumping) return; isJumping = true; cat.classList.add('jumping'); cat.classList.remove('running'); info.textContent = 'Прыжок! 🐱️'; createJumpEffect(); if (isSoundOn) playSound('jump'); vibrate([50,30,50]); setTimeout(() => { cat.classList.remove('jumping'); if (isGameRunning) cat.classList.add('running'); isJumping = false; info.textContent = 'Лови яблоки! 🍎'; }, 800); }
+        function doJump() { if (!isGameRunning || isJumping) return; isJumping = true; cat.classList.add('jumping'); cat.classList.remove('running'); info.textContent = 'Прыжок! 🐱️'; createJumpEffect(); if (isSoundOn) playSound('jump'); vibrate([50,30,50]); setTimeout(() => { cat.classList.remove('jumping'); if (isGameRunning) cat.classList.add('running'); isJumping = false; info.textContent = 'Лови яблоки! 🍎'; }, 900); }
         
-        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1500); obstacleInterval = setInterval(spawnObstacle, 2000); info.textContent = 'Лови 🍎 избегай 🌵!'; }
+        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1200); obstacleInterval = setInterval(spawnObstacle, 2000); info.textContent = 'Лови 🍎 избегай 🌵!'; }
         
         function gameOver() { isGameRunning = false; cat.classList.remove('running'); clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); if (isSoundOn) playSound('gameover'); vibrate([100,50,100,50,100]); document.getElementById('finalScore').textContent = score; document.getElementById('finalTime').textContent = timerEl.textContent; document.getElementById('finalDistance').textContent = distanceEl.textContent; gameOverScreen.classList.add('show'); }
         
