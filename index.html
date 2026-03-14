@@ -1,82 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Cat Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+    <title>Зелёный Котик 🐱</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
-        }
-        .cat {
-            width: 100px;
-            height: 100px;
-            background-color: #ffcc00;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .cat:hover {
-            transform: scale(1.1);
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:disabled {
-            background-color: #cccccc;
-        }
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; }
+        body { margin: 0; padding: 10px; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; font-family: Arial, sans-serif; }
+        .container { text-align: center; width: 100%; max-width: 500px; }
+        .scene { width: 100%; height: 350px; position: relative; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 15px; }
+        .cat { position: absolute; width: 120px; height: 120px; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: left 0.3s ease; }
+        .cat svg { width: 100%; height: 100%; }
+        .cat.walking { animation: bounce 0.5s infinite; }
+        .cat.jumping { animation: jump 0.8s ease; }
+        @keyframes bounce { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-10px)} }
+        @keyframes jump { 0%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} 20%{transform:translate(-50%,-50%) translateY(0) scale(0.9,1.1)} 40%{transform:translate(-50%,-50%) translateY(-100px)} 60%{transform:translate(-50%,-50%) translateY(-100px)} 80%{transform:translate(-50%,-50%) translateY(0) scale(1.1,0.9)} 100%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 15px; font-size: 18px; border: none; border-radius: 15px; background: white; color: #764ba2; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:active { transform: scale(0.95); }
+        #btnJump { grid-column: span 2; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .info { color: white; margin-top: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Interactive Cat Game!</h1>
-    <div class="cat" id="cat"></div>
-    <button id="playButton">Play</button>
-    <audio id="meowSound" src="meow.mp3" preload="auto"></audio>
-
+    <div class="container">
+        <div class="scene" id="scene">
+            <div class="cat cat-green" id="cat">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="100" cy="185" rx="60" ry="10" fill="rgba(0,0,0,0.2)"/>
+                    <path d="M 145 120 Q 170 110 175 90 Q 180 70 165 65 Q 155 62 150 75 Q 148 80 150 85 Q 153 92 148 100 Q 145 108 145 120" fill="#5DBB63" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse cx="100" cy="130" rx="55" ry="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse cx="100" cy="130" rx="40" ry="35" fill="#98E098"/>
+                    <ellipse cx="70" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse cx="100" cy="175" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse cx="130" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <circle cx="100" cy="85" r="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <path d="M 60 60 L 50 25 L 85 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <path d="M 140 60 L 150 25 L 115 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse cx="82" cy="80" rx="10" ry="12" fill="white"/>
+                    <ellipse cx="118" cy="80" rx="10" ry="12" fill="white"/>
+                    <circle cx="84" cy="82" r="6" fill="#2D5A2D"/>
+                    <circle cx="120" cy="82" r="6" fill="#2D5A2D"/>
+                    <path d="M 95 95 L 105 95 L 100 100 Z" fill="#FFB6C1"/>
+                    <path d="M 85 105 Q 92 110 100 105 Q 108 110 115 105" stroke="#2D5A2D" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="moveLeft()">⬅️ Влево</button>
+            <button onclick="moveRight()">Вправо ➡️</button>
+            <button onclick="jump()" id="btnJump">🦘 ПРЫЖОК</button>
+            <button onclick="stopCat()">⏹️ Стоп</button>
+        </div>
+        <div class="info" id="info">Нажми на кнопки! 🐱💚</div>
+    </div>
     <script>
-        const cat = document.getElementById('cat');
-        const playButton = document.getElementById('playButton');
-        const meowSound = document.getElementById('meowSound');
-
-        cat.addEventListener('click', () => {
-            playMeow();
-            changeCatPosition();
-        });
-
-        playButton.addEventListener('click', () => {
-            alert("Let's play!");
-            playButton.disabled = true;
-            setTimeout(() => {
-                playButton.disabled = false;
-            }, 5000);
-        });
-
-        function playMeow() {
-            meowSound.play().catch(error => {
-                console.error("Error playing sound:", error);
-            });
+        const cat = document.getElementById('cat'), info = document.getElementById('info');
+        let position = 50, direction = 0, isJumping = false, animationId;
+        function animate() {
+            if (direction !== 0 && !isJumping) {
+                position += direction * 0.4;
+                if (position < 8) { position = 8; direction = 0; cat.classList.remove('walking'); }
+                else if (position > 92) { position = 92; direction = 0; cat.classList.remove('walking'); }
+                cat.style.left = position + '%';
+                cat.style.transform = `translate(-50%, -50%) ${direction === -1 ? 'scaleX(-1)' : 'scaleX(1)'}`;
+                animationId = requestAnimationFrame(animate);
+            }
         }
-
-        function changeCatPosition() {
-            const x = Math.random() * (window.innerWidth - 100);
-            const y = Math.random() * (window.innerHeight - 100);
-            cat.style.transform = `translate(${x}px, ${y}px)`;
+        function moveLeft() { if (!direction && !isJumping) { direction = -1; cat.classList.add('walking'); animate(); }}
+        function moveRight() { if (!direction && !isJumping) { direction = 1; cat.classList.add('walking'); animate(); }}
+        function jump() {
+            if (isJumping) return;
+            isJumping = true; cat.classList.remove('walking'); cat.classList.add('jumping');
+            info.textContent = 'Прыжок! 🐱⬆️';
+            setTimeout(() => { cat.classList.remove('jumping'); isJumping = false; info.textContent = 'Приземлился! 😺'; }, 800);
         }
+        function stopCat() { direction = 0; cat.classList.remove('walking'); if (animationId) cancelAnimationFrame(animationId); }
     </script>
 </body>
 </html>
