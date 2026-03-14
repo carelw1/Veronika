@@ -63,9 +63,6 @@
             100% { right: 100%; } 
         }
         
-        /* Хитбокс для отладки (можно включить для проверки) */
-        .hitbox-debug { position: absolute; border: 2px solid rgba(255,0,0,0.5); background: rgba(255,0,0,0.1); pointer-events: none; z-index: 50; }
-        
         /* Эффекты */
         .sparkle { position: absolute; width: 25px; height: 25px; pointer-events: none; animation: sparkleAnim 0.8s ease-out forwards; z-index: 20; }
         @keyframes sparkleAnim { 0%{transform:scale(0) rotate(0deg); opacity:1} 100%{transform:scale(1.5) rotate(180deg); opacity:0} }
@@ -83,9 +80,6 @@
         /* Подсказка */
         .tap-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.9); font-size: 18px; pointer-events: none; animation: pulse 2s infinite; text-align: center; z-index: 100; }
         @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
-        
-        /* Линия прыжка - показывает где кот */
-        .cat-zone { position: absolute; bottom: 60px; left: 15%; width: 80px; height: 200px; border: 2px dashed rgba(255,255,255,0.3); border-radius: 10px; pointer-events: none; transform: translateX(-50%); }
         
         /* Кнопки */
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -139,7 +133,6 @@
             <div class="stars" id="stars"></div>
             <div class="background-layer" id="bgLayer"></div>
             <div class="ground" id="ground"></div>
-            <div class="cat-zone"></div>
             <div class="tap-hint" id="tapHint">👆 Тапай чтобы прыгать!<br><small>Лови 🍎 избегай 🐦🐕</small></div>
             <div class="cat-container">
                 <div class="cat cat-green" id="cat">
@@ -203,11 +196,16 @@
         const cat = document.getElementById('cat'), info = document.getElementById('info'), scene = document.getElementById('scene'), timerEl = document.getElementById('timer'), scoreEl = document.getElementById('score'), distanceEl = document.getElementById('distance'), starsEl = document.getElementById('stars'), tapHint = document.getElementById('tapHint'), gameOverScreen = document.getElementById('gameOver');
         
         let isJumping = false, isGameRunning = false, score = 0, distance = 0, startTime = null, timerInterval = null, distanceInterval = null, appleInterval = null, obstacleInterval = null, isNightMode = false, isSoundOn = true, colorMode = 0, apples = [], obstacles = [], animationId = null;
+        let lastObstacleTime = 0;
+        let lastObstacleType = null; // 'bird' или 'dog'
         let audioCtx;
         
         // МАЛЕНЬКИЙ ХИТБОКС - в 2 раза меньше!
-        const CAT_HITBOX_PADDING = 35; // Было 70, стало 35 (в 2 раза меньше)
-        const OBSTACLE_HITBOX_PADDING = 15; // Маленький хитбокс для препятствий
+        const CAT_HITBOX_PADDING = 35;
+        const OBSTACLE_HITBOX_PADDING = 15;
+        
+        // МИНИМАЛЬНОЕ ВРЕМЯ между препятствиями (чтобы не были рядом)
+        const MIN_OBSTACLE_GAP = 1800; // 1.8 секунды между птицей и собакой
         
         function loadProgress() { try { const saved = localStorage.getItem('catRunnerProgress'); if (saved) { const data = JSON.parse(saved); isNightMode = data.nightMode || false; isSoundOn = data.soundOn !== false; colorMode = data.colorMode || 0; applyColorMode(); if (isNightMode) document.body.classList.add('night-mode'); }} catch(e) {} }
         function saveProgress() { try { localStorage.setItem('catRunnerProgress', JSON.stringify({ nightMode: isNightMode, soundOn: isSoundOn, colorMode })); } catch(e) {} }
@@ -226,23 +224,83 @@
         
         function showScorePopup(x, y) { const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = '+10'; popup.style.left = x + 'px'; popup.style.top = y + 'px'; document.body.appendChild(popup); setTimeout(() => popup.remove(), 1000); }
         
-        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-right'; // ПТИЦА или СОБАКА вместо кактуса
-        obstacle.innerHTML = Math.random() > 0.5 ? '🐦' : '🐕'; 
-        // Птица летит выше, собака бежит по земле
-        const isBird = Math.random() > 0.5;
-        obstacle.style.bottom = isBird ? '120px' : '60px';
-        scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2800); }
+        function spawnObstacle() { 
+            if (!isGameRunning) return; 
+            
+            const currentTime = Date.now();
+            
+            // ПРОВЕРКА: не слишком ли рано после последнего препятствия
+            if (currentTime - lastObstacleTime < MIN_OBSTACLE_GAP) {
+                return; // Пропускаем спавн, чтобы не было рядом
+            }
+            
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle obstacle-right';
+            
+            // Чередование: птица ИЛИ собака (никогда вместе)
+            let type;
+            if (lastObstacleType === 'bird') {
+                type = 'dog'; // После птицы всегда собака
+            } else if (lastObstacleType === 'dog') {
+                type = 'bird'; // После собаки всегда птица
+            } else {
+                type = Math.random() > 0.5 ? 'bird' : 'dog'; // Первый раз случайно
+            }
+            
+            lastObstacleType = type;
+            lastObstacleTime = currentTime;
+            
+            if (type === 'bird') {
+                obstacle.innerHTML = '🐦';
+                obstacle.style.bottom = '140px'; // Птица ВСЕГДА высоко
+            } else {
+                obstacle.innerHTML = '🐕';
+                obstacle.style.bottom = '60px'; // Собака ВСЕГДА внизу
+            }
+            
+            scene.appendChild(obstacle);
+            obstacles.push(obstacle);
+            checkObstacleCollision(obstacle);
+            
+            setTimeout(() => { 
+                if (obstacle.parentNode) { 
+                    obstacle.remove(); 
+                    obstacles = obstacles.filter(o => o !== obstacle); 
+                } 
+            }, 2800);
+        }
         
-        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); // ХИТБОКС В 2 РАЗА МЕНЬШЕ!
-        const catLeft = catRect.left + CAT_HITBOX_PADDING;
-        const catRight = catRect.right - CAT_HITBOX_PADDING;
-        const catTop = catRect.top + CAT_HITBOX_PADDING;
-        const catBottom = catRect.bottom - CAT_HITBOX_PADDING;
-        const obsLeft = obsRect.left + OBSTACLE_HITBOX_PADDING;
-        const obsRight = obsRect.right - OBSTACLE_HITBOX_PADDING;
-        const obsTop = obsRect.top + OBSTACLE_HITBOX_PADDING;
-        const obsBottom = obsRect.bottom - OBSTACLE_HITBOX_PADDING;
-        if (catLeft < obsRight && catRight > obsLeft && catTop < obsBottom && catBottom > obsTop) { gameOver(); clearInterval(checkInterval); } }, 100); }
+        function checkObstacleCollision(obstacle) { 
+            const checkInterval = setInterval(() => { 
+                if (!isGameRunning) { 
+                    clearInterval(checkInterval); 
+                    return; 
+                } 
+                if (!obstacle.parentNode) { 
+                    clearInterval(checkInterval); 
+                    return; 
+                } 
+                
+                const catRect = cat.getBoundingClientRect();
+                const obsRect = obstacle.getBoundingClientRect();
+                
+                // ХИТБОКС В 2 РАЗА МЕНЬШЕ!
+                const catLeft = catRect.left + CAT_HITBOX_PADDING;
+                const catRight = catRect.right - CAT_HITBOX_PADDING;
+                const catTop = catRect.top + CAT_HITBOX_PADDING;
+                const catBottom = catRect.bottom - CAT_HITBOX_PADDING;
+                
+                const obsLeft = obsRect.left + OBSTACLE_HITBOX_PADDING;
+                const obsRight = obsRect.right - OBSTACLE_HITBOX_PADDING;
+                const obsTop = obsRect.top + OBSTACLE_HITBOX_PADDING;
+                const obsBottom = obsRect.bottom - OBSTACLE_HITBOX_PADDING;
+                
+                if (catLeft < obsRight && catRight > obsLeft && catTop < obsBottom && catBottom > obsTop) { 
+                    gameOver(); 
+                    clearInterval(checkInterval); 
+                } 
+            }, 100); 
+        }
         
         function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 800); } }
         
@@ -254,21 +312,102 @@
         
         function doJump() { if (!isGameRunning || isJumping) return; isJumping = true; cat.classList.add('jumping'); cat.classList.remove('running'); info.textContent = 'Прыжок! 🐱️'; createJumpEffect(); if (isSoundOn) playSound('jump'); vibrate([50,30,50]); setTimeout(() => { cat.classList.remove('jumping'); if (isGameRunning) cat.classList.add('running'); isJumping = false; info.textContent = 'Лови яблоки! 🍎'; }, 900); }
         
-        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1200); obstacleInterval = setInterval(spawnObstacle, 2500); info.textContent = 'Лови 🍎 избегай 🐦🐕!'; }
+        function startGame() { 
+            if (isGameRunning) return; 
+            isGameRunning = true; 
+            score = 0; 
+            distance = 0; 
+            startTime = null; 
+            lastObstacleTime = 0;
+            lastObstacleType = null;
+            scoreEl.textContent = '0'; 
+            distanceEl.textContent = '0м'; 
+            timerEl.textContent = '0:00'; 
+            tapHint.style.display = 'none'; 
+            gameOverScreen.classList.remove('show'); 
+            cat.classList.add('running'); 
+            startTimer(); 
+            startDistance(); 
+            appleInterval = setInterval(spawnApple, 1200); 
+            obstacleInterval = setInterval(spawnObstacle, 2200); // Пытаемся спавнить каждые 2.2с
+            info.textContent = 'Лови 🍎 избегай 🐦🐕!'; 
+        }
         
-        function gameOver() { isGameRunning = false; cat.classList.remove('running'); clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); if (isSoundOn) playSound('gameover'); vibrate([100,50,100,50,100]); document.getElementById('finalScore').textContent = score; document.getElementById('finalTime').textContent = timerEl.textContent; document.getElementById('finalDistance').textContent = distanceEl.textContent; gameOverScreen.classList.add('show'); }
+        function gameOver() { 
+            isGameRunning = false; 
+            cat.classList.remove('running'); 
+            clearInterval(timerInterval); 
+            clearInterval(distanceInterval); 
+            clearInterval(appleInterval); 
+            clearInterval(obstacleInterval); 
+            if (isSoundOn) playSound('gameover'); 
+            vibrate([100,50,100,50,100]); 
+            document.getElementById('finalScore').textContent = score; 
+            document.getElementById('finalTime').textContent = timerEl.textContent; 
+            document.getElementById('finalDistance').textContent = distanceEl.textContent; 
+            gameOverScreen.classList.add('show'); 
+        }
         
-        function restartGame() { gameOverScreen.classList.remove('show'); apples.forEach(a => a.remove()); apples = []; obstacles.forEach(o => o.remove()); obstacles = []; startGame(); }
+        function restartGame() { 
+            gameOverScreen.classList.remove('show'); 
+            apples.forEach(a => a.remove()); 
+            apples = []; 
+            obstacles.forEach(o => o.remove()); 
+            obstacles = []; 
+            startGame(); 
+        }
         
-        function resetGame() { isGameRunning = false; clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); apples.forEach(a => a.remove()); apples = []; obstacles.forEach(o => o.remove()); obstacles = []; score = 0; distance = 0; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; cat.classList.remove('running', 'jumping'); tapHint.style.display = 'block'; info.textContent = 'Нажми СТАРТ и тапай чтобы прыгать! 🐱💚'; gameOverScreen.classList.remove('show'); }
+        function resetGame() { 
+            isGameRunning = false; 
+            clearInterval(timerInterval); 
+            clearInterval(distanceInterval); 
+            clearInterval(appleInterval); 
+            clearInterval(obstacleInterval); 
+            apples.forEach(a => a.remove()); 
+            apples = []; 
+            obstacles.forEach(o => o.remove()); 
+            obstacles = []; 
+            score = 0; 
+            distance = 0; 
+            scoreEl.textContent = '0'; 
+            distanceEl.textContent = '0м'; 
+            timerEl.textContent = '0:00'; 
+            cat.classList.remove('running', 'jumping'); 
+            tapHint.style.display = 'block'; 
+            info.textContent = 'Нажми СТАРТ и тапай чтобы прыгать! 🐱💚'; 
+            gameOverScreen.classList.remove('show'); 
+        }
         
-        function changeColor() { colorMode = (colorMode + 1) % 4; applyColorMode(); saveProgress(); const colors = ['Зелёный 💚', 'Красный ❤️', 'Синий 💙', 'Радуга 🌈']; info.textContent = isGameRunning ? 'Цвет: ' + colors[colorMode] : 'Нажми СТАРТ!'; }
+        function changeColor() { 
+            colorMode = (colorMode + 1) % 4; 
+            applyColorMode(); 
+            saveProgress(); 
+            const colors = ['Зелёный 💚', 'Красный ❤️', 'Синий 💙', 'Радуга 🌈']; 
+            info.textContent = isGameRunning ? 'Цвет: ' + colors[colorMode] : 'Нажми СТАРТ!'; 
+        }
         
-        function applyColorMode() { cat.classList.remove('cat-green', 'cat-red', 'cat-blue', 'cat-rainbow'); if (colorMode === 0) cat.classList.add('cat-green'); else if (colorMode === 1) cat.classList.add('cat-red'); else if (colorMode === 2) cat.classList.add('cat-blue'); else if (colorMode === 3) cat.classList.add('cat-rainbow'); }
+        function applyColorMode() { 
+            cat.classList.remove('cat-green', 'cat-red', 'cat-blue', 'cat-rainbow'); 
+            if (colorMode === 0) cat.classList.add('cat-green'); 
+            else if (colorMode === 1) cat.classList.add('cat-red'); 
+            else if (colorMode === 2) cat.classList.add('cat-blue'); 
+            else if (colorMode === 3) cat.classList.add('cat-rainbow'); 
+        }
         
-        function toggleNight() { isNightMode = !isNightMode; document.body.classList.toggle('night-mode', isNightMode); scene.classList.toggle('night-mode', isNightMode); document.getElementById('ground').classList.toggle('night-mode', isNightMode); saveProgress(); info.textContent = isNightMode ? 'Ночной режим 🌙⭐' : 'Дневной режим ☀️'; }
+        function toggleNight() { 
+            isNightMode = !isNightMode; 
+            document.body.classList.toggle('night-mode', isNightMode); 
+            scene.classList.toggle('night-mode', isNightMode); 
+            document.getElementById('ground').classList.toggle('night-mode', isNightMode); 
+            saveProgress(); 
+            info.textContent = isNightMode ? 'Ночной режим 🌙⭐' : 'Дневной режим ☀️'; 
+        }
         
-        function toggleSound() { isSoundOn = !isSoundOn; document.getElementById('btnSound').textContent = isSoundOn ? '🔊 Звук' : '🔇 Тихо'; saveProgress(); }
+        function toggleSound() { 
+            isSoundOn = !isSoundOn; 
+            document.getElementById('btnSound').textContent = isSoundOn ? '🔊 Звук' : '🔇 Тихо'; 
+            saveProgress(); 
+        }
         
         scene.addEventListener('touchstart', function(e) { e.preventDefault(); if (isGameRunning) doJump(); }, {passive: false});
         scene.addEventListener('mousedown', function(e) { if (isGameRunning) doJump(); });
