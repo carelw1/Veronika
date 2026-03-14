@@ -7,77 +7,152 @@
     <meta name="theme-color" content="#667eea">
     <title>Зелёный Котик 🐱</title>
     <style>
-        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; }
-        body { margin: 0; padding: 10px; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; font-family: Arial, sans-serif; }
-        .container { text-align: center; width: 100%; max-width: 500px; }
-        .scene { width: 100%; height: 350px; position: relative; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 15px; }
-        .cat { position: absolute; width: 120px; height: 120px; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: left 0.3s ease; }
-        .cat svg { width: 100%; height: 100%; }
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+        body { margin: 0; padding: 10px; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; box-sizing: border-box; transition: background 0.5s ease; }
+        body.night-mode { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .container { text-align: center; width: 100%; max-width: 500px; padding: 10px; }
+        .stats { display: flex; justify-content: space-around; background: rgba(255,255,255,0.2); border-radius: 15px; padding: 10px; margin-bottom: 10px; backdrop-filter: blur(10px); }
+        .stat-item { color: white; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .stat-value { font-size: 20px; font-weight: bold; display: block; }
+        .scene { width: 100%; height: 350px; position: relative; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        .scene.night-mode { background: rgba(0,0,50,0.3); }
+        .stars { position: absolute; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
+        .night-mode .stars { opacity: 1; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 2s infinite; }
+        @keyframes twinkle { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
+        .cat { position: absolute; width: 120px; height: 120px; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: left 0.3s ease, filter 0.3s ease; z-index: 10; }
+        .cat svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); transition: filter 0.3s ease; }
         .cat.walking { animation: bounce 0.5s infinite; }
         .cat.jumping { animation: jump 0.8s ease; }
         @keyframes bounce { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-10px)} }
-        @keyframes jump { 0%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} 20%{transform:translate(-50%,-50%) translateY(0) scale(0.9,1.1)} 40%{transform:translate(-50%,-50%) translateY(-100px)} 60%{transform:translate(-50%,-50%) translateY(-100px)} 80%{transform:translate(-50%,-50%) translateY(0) scale(1.1,0.9)} 100%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 15px; font-size: 18px; border: none; border-radius: 15px; background: white; color: #764ba2; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        button:active { transform: scale(0.95); }
-        #btnJump { grid-column: span 2; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
-        .info { color: white; margin-top: 10px; font-size: 14px; }
+        @keyframes jump { 0%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} 20%{transform:translate(-50%,-50%) translateY(0) scale(0.9,1.1)} 40%{transform:translate(-50%,-50%) translateY(-100px) scale(1,1)} 60%{transform:translate(-50%,-50%) translateY(-100px) scale(1,1)} 80%{transform:translate(-50%,-50%) translateY(0) scale(1.1,0.9)} 100%{transform:translate(-50%,-50%) translateY(0) scale(1,1)} }
+        .sparkle { position: absolute; width: 20px; height: 20px; pointer-events: none; animation: sparkleAnim 1s ease-out forwards; z-index: 20; }
+        @keyframes sparkleAnim { 0%{transform:scale(0) rotate(0deg); opacity:1} 100%{transform:scale(1.5) rotate(180deg); opacity:0} }
+        .paw-print { position: absolute; width: 30px; height: 30px; pointer-events: none; opacity: 0.6; animation: fadeOut 3s forwards; z-index: 5; }
+        @keyframes fadeOut { 0%{opacity:0.6} 100%{opacity:0} }
+        .apple { position: absolute; width: 40px; height: 40px; pointer-events: none; z-index: 8; animation: appleFloat 2s infinite; }
+        @keyframes appleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .btn-row { display: flex; gap: 10px; justify-content: center; }
+        button { padding: 15px 18px; font-size: 18px; border: none; border-radius: 15px; cursor: pointer; background: white; color: #764ba2; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.2s ease; flex: 1; min-width: 100px; -webkit-appearance: none; appearance: none; }
+        button:active { transform: scale(0.95); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #btnJump { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; grid-column: span 2; }
+        #btnColor { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        #btnNight { background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%); color: white; }
+        #btnSound { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+        .info { color: white; margin-top: 10px; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); padding: 0 10px; line-height: 1.4; min-height: 40px; }
+        .cat-green .cat-body { fill: #7FD47F !important; }
+        .cat-green .cat-dark { stroke: #4A9A50 !important; }
+        .cat-green .cat-light { fill: #98E098 !important; }
+        .cat-green .cat-eyes { fill: #2D5A2D !important; }
+        .cat-red .cat-body { fill: #FF6B6B !important; }
+        .cat-red .cat-dark { stroke: #C92A2A !important; }
+        .cat-red .cat-light { fill: #FFA8A8 !important; }
+        .cat-red .cat-eyes { fill: #5C0000 !important; }
+        .cat-blue .cat-body { fill: #4DABF7 !important; }
+        .cat-blue .cat-dark { stroke: #1864AB !important; }
+        .cat-blue .cat-light { fill: #A5D8FF !important; }
+        .cat-blue .cat-eyes { fill: #003060 !important; }
+        .cat-rainbow { animation: rainbow 3s linear infinite; }
+        @keyframes rainbow { 0%{filter:hue-rotate(0deg) drop-shadow(0 10px 20px rgba(0,0,0,0.3))} 100%{filter:hue-rotate(360deg) drop-shadow(0 10px 20px rgba(0,0,0,0.3))} }
+        .apple-collected { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px 40px; border-radius: 20px; font-size: 24px; font-weight: bold; box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: popIn 0.5s ease-out forwards; z-index: 100; pointer-events: none; }
+        @keyframes popIn { 0%{transform:translate(-50%,-50%) scale(0); opacity:0} 50%{transform:translate(-50%,-50%) scale(1.1)} 100%{transform:translate(-50%,-50%) scale(1); opacity:1} }
+        @media (max-width:400px) { .scene{height:280px} .cat{width:100px;height:100px} button{padding:12px 15px;font-size:16px;min-width:90px} .info{font-size:13px} }
+        @media (max-height:500px) and (orientation:landscape) { .scene{height:200px;margin-bottom:10px} .cat{width:80px;height:80px} }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="stats">
+            <div class="stat-item">⏱️ Время <span class="stat-value" id="timer">0:00</span></div>
+            <div class="stat-item">🦘 Прыжки <span class="stat-value" id="jumpCount">0</span></div>
+            <div class="stat-item">🍎 Яблоки <span class="stat-value" id="appleCount">0</span></div>
+        </div>
         <div class="scene" id="scene">
+            <div class="stars" id="stars"></div>
             <div class="cat cat-green" id="cat">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                     <ellipse cx="100" cy="185" rx="60" ry="10" fill="rgba(0,0,0,0.2)"/>
-                    <path d="M 145 120 Q 170 110 175 90 Q 180 70 165 65 Q 155 62 150 75 Q 148 80 150 85 Q 153 92 148 100 Q 145 108 145 120" fill="#5DBB63" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse cx="100" cy="130" rx="55" ry="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse cx="100" cy="130" rx="40" ry="35" fill="#98E098"/>
-                    <ellipse cx="70" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse cx="100" cy="175" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse cx="130" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <circle cx="100" cy="85" r="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <path d="M 60 60 L 50 25 L 85 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <path d="M 140 60 L 150 25 L 115 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse cx="82" cy="80" rx="10" ry="12" fill="white"/>
-                    <ellipse cx="118" cy="80" rx="10" ry="12" fill="white"/>
-                    <circle cx="84" cy="82" r="6" fill="#2D5A2D"/>
-                    <circle cx="120" cy="82" r="6" fill="#2D5A2D"/>
-                    <path d="M 95 95 L 105 95 L 100 100 Z" fill="#FFB6C1"/>
-                    <path d="M 85 105 Q 92 110 100 105 Q 108 110 115 105" stroke="#2D5A2D" stroke-width="2" fill="none"/>
+                    <path class="cat-tail" d="M 145 120 Q 170 110 175 90 Q 180 70 165 65 Q 155 62 150 75 Q 148 80 150 85 Q 153 92 148 100 Q 145 108 145 120" fill="#5DBB63" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse class="cat-body" cx="100" cy="130" rx="55" ry="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse class="cat-light" cx="100" cy="130" rx="40" ry="35" fill="#98E098"/>
+                    <ellipse class="cat-body" cx="70" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse class="cat-body" cx="100" cy="175" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <ellipse class="cat-body" cx="130" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <circle class="cat-body" cx="100" cy="85" r="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <path class="cat-body" d="M 60 60 L 50 25 L 85 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <path class="cat-body" d="M 140 60 L 150 25 L 115 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                    <path class="cat-light" d="M 63 55 L 57 35 L 75 47 Z" fill="#98E098"/>
+                    <path class="cat-light" d="M 137 55 L 143 35 L 125 47 Z" fill="#98E098"/>
+                    <ellipse cx="82" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
+                    <ellipse cx="118" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
+                    <circle class="cat-eyes" cx="84" cy="82" r="6" fill="#2D5A2D"/>
+                    <circle class="cat-eyes" cx="120" cy="82" r="6" fill="#2D5A2D"/>
+                    <circle cx="86" cy="80" r="2" fill="white"/>
+                    <circle cx="122" cy="80" r="2" fill="white"/>
+                    <path d="M 95 95 L 105 95 L 100 100 Z" fill="#FFB6C1" stroke="#4A9A50" stroke-width="1"/>
+                    <path class="cat-dark" d="M 85 105 Q 92 110 100 105 Q 108 110 115 105" stroke="#2D5A2D" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <line class="cat-dark" x1="55" y1="95" x2="75" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                    <line class="cat-dark" x1="55" y1="102" x2="75" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                    <line class="cat-dark" x1="145" y1="95" x2="125" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                    <line class="cat-dark" x1="145" y1="102" x2="125" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                    <ellipse class="cat-light" cx="70" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
+                    <ellipse class="cat-light" cx="130" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
                 </svg>
             </div>
         </div>
         <div class="controls">
-            <button onclick="moveLeft()">⬅️ Влево</button>
-            <button onclick="moveRight()">Вправо ➡️</button>
+            <div class="btn-row">
+                <button onclick="moveLeft()" id="btnLeft">⬅️</button>
+                <button onclick="moveRight()" id="btnRight">➡️</button>
+            </div>
             <button onclick="jump()" id="btnJump">🦘 ПРЫЖОК</button>
-            <button onclick="stopCat()">⏹️ Стоп</button>
+            <div class="btn-row">
+                <button onclick="changeColor()" id="btnColor">🎨 Цвет</button>
+                <button onclick="toggleNight()" id="btnNight">🌙 Ночь</button>
+            </div>
+            <div class="btn-row">
+                <button onclick="toggleSound()" id="btnSound">🔊 Звук</button>
+                <button onclick="resetGame()" id="btnReset">🔄 Сброс</button>
+            </div>
         </div>
-        <div class="info" id="info">Нажми на кнопки! 🐱💚</div>
+        <div class="info" id="info">Нажми на кнопки или свайпни! 🐱💚</div>
     </div>
     <script>
-        const cat = document.getElementById('cat'), info = document.getElementById('info');
-        let position = 50, direction = 0, isJumping = false, animationId;
-        function animate() {
-            if (direction !== 0 && !isJumping) {
-                position += direction * 0.4;
-                if (position < 8) { position = 8; direction = 0; cat.classList.remove('walking'); }
-                else if (position > 92) { position = 92; direction = 0; cat.classList.remove('walking'); }
-                cat.style.left = position + '%';
-                cat.style.transform = `translate(-50%, -50%) ${direction === -1 ? 'scaleX(-1)' : 'scaleX(1)'}`;
-                animationId = requestAnimationFrame(animate);
-            }
-        }
-        function moveLeft() { if (!direction && !isJumping) { direction = -1; cat.classList.add('walking'); animate(); }}
-        function moveRight() { if (!direction && !isJumping) { direction = 1; cat.classList.add('walking'); animate(); }}
-        function jump() {
-            if (isJumping) return;
-            isJumping = true; cat.classList.remove('walking'); cat.classList.add('jumping');
-            info.textContent = 'Прыжок! 🐱⬆️';
-            setTimeout(() => { cat.classList.remove('jumping'); isJumping = false; info.textContent = 'Приземлился! 😺'; }, 800);
-        }
-        function stopCat() { direction = 0; cat.classList.remove('walking'); if (animationId) cancelAnimationFrame(animationId); }
+        const cat = document.getElementById('cat'), info = document.getElementById('info'), scene = document.getElementById('scene'), timerEl = document.getElementById('timer'), jumpCountEl = document.getElementById('jumpCount'), appleCountEl = document.getElementById('appleCount'), starsEl = document.getElementById('stars');
+        let position = 50, animationId = null, direction = 0, isJumping = false, speed = 0.4, jumpCount = 0, appleCount = 0, startTime = null, timerInterval = null, isNightMode = false, isSoundOn = true, colorMode = 0, apples = [], pawPrints = [];
+        
+        function loadProgress() { try { const saved = localStorage.getItem('catGameProgress'); if (saved) { const data = JSON.parse(saved); jumpCount = data.jumpCount || 0; appleCount = data.appleCount || 0; isNightMode = data.nightMode || false; isSoundOn = data.soundOn !== false; colorMode = data.colorMode || 0; updateStats(); applyColorMode(); if (isNightMode) document.body.classList.add('night-mode'); }} catch(e) { console.log('Load error:', e); } }
+        function saveProgress() { try { localStorage.setItem('catGameProgress', JSON.stringify({ jumpCount, appleCount, nightMode: isNightMode, soundOn: isSoundOn, colorMode })); } catch(e) { console.log('Save error:', e); } }
+        function startTimer() { if (!startTime) { startTime = Date.now(); timerInterval = setInterval(() => { const elapsed = Math.floor((Date.now() - startTime) / 1000); timerEl.textContent = Math.floor(elapsed/60) + ':' + (elapsed%60).toString().padStart(2,'0'); }, 1000); } }
+        function updateStats() { jumpCountEl.textContent = jumpCount; appleCountEl.textContent = appleCount; }
+        function createStars() { starsEl.innerHTML = ''; for (let i = 0; i < 50; i++) { const star = document.createElement('div'); star.className = 'star'; star.style.left = Math.random()*100+'%'; star.style.top = Math.random()*100+'%'; star.style.width = (Math.random()*3+1)+'px'; star.style.height = star.style.width; star.style.animationDelay = Math.random()*2+'s'; starsEl.appendChild(star); } }
+        function spawnApple() { if (apples.length >= 3) return; const apple = document.createElement('div'); apple.className = 'apple'; apple.innerHTML = '🍎'; apple.style.left = (10+Math.random()*80)+'%'; apple.style.top = (20+Math.random()*60)+'%'; scene.appendChild(apple); apples.push(apple); setTimeout(() => checkAppleCollection(apple), 100); }
+        function checkAppleCollection(apple) { const checkInterval = setInterval(() => { if (!apple.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(), appleRect = apple.getBoundingClientRect(); if (catRect.left < appleRect.right && catRect.right > appleRect.left && catRect.top < appleRect.bottom && catRect.bottom > appleRect.top) { apple.remove(); apples = apples.filter(a => a !== apple); appleCount++; updateStats(); saveProgress(); showAppleCollected(); createSparkles(appleRect.left, appleRect.top); if (isSoundOn) playSound('collect'); clearInterval(checkInterval); } }, 100); }
+        function showAppleCollected() { const msg = document.createElement('div'); msg.className = 'apple-collected'; msg.textContent = '🍎 +1!'; document.body.appendChild(msg); setTimeout(() => msg.remove(), 1000); }
+        function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 1000); } }
+        function createPawPrint() { if (direction === 0 || isJumping) return; const paw = document.createElement('div'); paw.className = 'paw-print'; paw.innerHTML = '🐾'; paw.style.left = position + '%'; paw.style.top = '75%'; paw.style.transform = direction === -1 ? 'scaleX(-1)' : 'scaleX(1)'; scene.appendChild(paw); pawPrints.push(paw); if (pawPrints.length > 5) { pawPrints[0].remove(); pawPrints.shift(); } setTimeout(() => { if (paw.parentNode) { paw.remove(); pawPrints = pawPrints.filter(p => p !== paw); } }, 3000); }
+        let audioCtx; function playSound(type) { if (!isSoundOn) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'jump') { osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.3); } else if (type === 'collect') { osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2); } } catch(e) { console.log('Audio error:', e); } }
+        function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} } }
+        function animate() { if (direction !== 0 && !isJumping) { position += direction * speed; if (position < 8) { position = 8; direction = 0; info.textContent = 'Котик у края! 🐱'; cat.classList.remove('walking'); } else if (position > 92) { position = 92; direction = 0; info.textContent = 'Котик у края! 🐱'; cat.classList.remove('walking'); } cat.style.left = position + '%'; cat.style.transform = `translate(-50%, -50%) ${direction === -1 ? 'scaleX(-1)' : 'scaleX(1)'}`; if (Math.random() < 0.05) createPawPrint(); animationId = requestAnimationFrame(animate); } }
+        function moveLeft() { startTimer(); if (direction === 0 && !isJumping) { direction = -1; cat.classList.add('walking'); info.textContent = 'Котик идёт влево... 🐾'; animate(); } }
+        function moveRight() { startTimer(); if (direction === 0 && !isJumping) { direction = 1; cat.classList.add('walking'); info.textContent = 'Котик идёт вправо... 🐾'; animate(); } }
+        function jump() { startTimer(); if (!isJumping) { isJumping = true; jumpCount++; updateStats(); saveProgress(); cat.classList.remove('walking'); cat.classList.add('jumping'); info.textContent = 'Котик прыгает! 🐱⬆️'; const catRect = cat.getBoundingClientRect(); createSparkles(catRect.left + 60, catRect.top + 60); vibrate([50,30,50]); if (isSoundOn) playSound('jump'); const wasMoving = direction !== 0; direction = 0; if (animationId) cancelAnimationFrame(animationId); setTimeout(() => { cat.classList.remove('jumping'); isJumping = false; info.textContent = 'Приземлился! 😺'; if (wasMoving) { setTimeout(() => { if (!isJumping) { cat.classList.add('walking'); animate(); } }, 100); } }, 800); } }
+        function changeColor() { colorMode = (colorMode + 1) % 4; applyColorMode(); saveProgress(); const colors = ['Зелёный 💚', 'Красный ❤️', 'Синий 💙', 'Радуга 🌈']; info.textContent = 'Цвет: ' + colors[colorMode]; }
+        function applyColorMode() { cat.classList.remove('cat-green', 'cat-red', 'cat-blue', 'cat-rainbow'); if (colorMode === 0) cat.classList.add('cat-green'); else if (colorMode === 1) cat.classList.add('cat-red'); else if (colorMode === 2) cat.classList.add('cat-blue'); else if (colorMode === 3) cat.classList.add('cat-rainbow'); }
+        function toggleNight() { isNightMode = !isNightMode; document.body.classList.toggle('night-mode', isNightMode); scene.classList.toggle('night-mode', isNightMode); saveProgress(); info.textContent = isNightMode ? 'Ночной режим 🌙⭐' : 'Дневной режим ☀️'; }
+        function toggleSound() { isSoundOn = !isSoundOn; document.getElementById('btnSound').textContent = isSoundOn ? '🔊 Звук' : '🔇 Тихо'; saveProgress(); info.textContent = isSoundOn ? 'Звук включен 🔊' : 'Звук выключен 🔇'; }
+        function stopCat() { direction = 0; cat.classList.remove('walking'); info.textContent = 'Котик остановился 😺'; if (animationId) cancelAnimationFrame(animationId); }
+        function resetGame() { stopCat(); position = 50; cat.style.left = position + '%'; cat.style.transform = 'translate(-50%, -50%) scaleX(1)'; apples.forEach(a => a.remove()); apples = []; pawPrints.forEach(p => p.remove()); pawPrints = []; jumpCount = 0; appleCount = 0; startTime = null; if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } timerEl.textContent = '0:00'; updateStats(); localStorage.removeItem('catGameProgress'); info.textContent = 'Всё сброшено! 🐱💚'; }
+        let touchStartX = 0, touchEndX = 0;
+        scene.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        scene.addEventListener('touchend', function(e) { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
+        function handleSwipe() { const diff = touchStartX - touchEndX; if (Math.abs(diff) > 50) { if (diff > 0) moveRight(); else moveLeft(); } }
+        setInterval(() => { if (Math.random() < 0.3) spawnApple(); }, 5000);
+        let lastTouchEnd = 0; document.addEventListener('touchend', function(event) { const now = Date.now(); if (now - lastTouchEnd <= 300) event.preventDefault(); lastTouchEnd = now; }, false);
+        window.onload = function() { loadProgress(); createStars(); info.textContent = 'Нажми на кнопки или свайпни! 🐱💚'; };
+        window.addEventListener('beforeunload', saveProgress);
     </script>
 </body>
 </html>
