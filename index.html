@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#667eea">
-    <title>Зелёный Котик 🐱</title>
+    <title>Котик Раннер 🐱</title>
     <style>
         * { -webkit-tap-highlight-color: transparent; touch-action: none; user-select: none; -webkit-user-select: none; }
         body { margin: 0; padding: 10px; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; box-sizing: border-box; transition: background 0.5s ease; }
@@ -14,40 +14,60 @@
         .stats { display: flex; justify-content: space-around; background: rgba(255,255,255,0.2); border-radius: 15px; padding: 10px; margin-bottom: 10px; backdrop-filter: blur(10px); }
         .stat-item { color: white; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .stat-value { font-size: 20px; font-weight: bold; display: block; }
-        .scene { width: 100%; height: 350px; position: relative; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px); cursor: pointer; }
+        .scene { width: 100%; height: 400px; position: relative; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px); cursor: pointer; }
         .scene:active { background: rgba(255,255,255,0.15); }
         .scene.night-mode { background: rgba(0,0,50,0.3); }
-        .control-zone { position: absolute; pointer-events: none; opacity: 0.15; transition: opacity 0.2s; }
-        .control-zone.active { opacity: 0.4; background: rgba(255,255,255,0.3); }
-        .zone-up { top: 0; left: 25%; width: 50%; height: 30%; border-bottom: 2px dashed rgba(255,255,255,0.5); }
-        .zone-down { bottom: 0; left: 25%; width: 50%; height: 30%; border-top: 2px dashed rgba(255,255,255,0.5); }
-        .zone-left { left: 0; top: 30%; width: 25%; height: 40%; border-right: 2px dashed rgba(255,255,255,0.5); }
-        .zone-right { right: 0; top: 30%; width: 25%; height: 40%; border-left: 2px dashed rgba(255,255,255,0.5); }
-        .zone-center { top: 30%; left: 25%; width: 50%; height: 40%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 50%; }
-        .zone-hint { position: absolute; color: rgba(255,255,255,0.8); font-size: 24px; pointer-events: none; transform: translate(-50%, -50%); }
-        .hint-up { top: 15%; left: 50%; }
-        .hint-down { bottom: 15%; left: 50%; }
-        .hint-left { top: 50%; left: 12%; }
-        .hint-right { top: 50%; right: 12%; }
-        .hint-center { top: 50%; left: 50%; font-size: 16px; }
-        .tap-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.9); font-size: 16px; pointer-events: none; animation: pulse 2s infinite; text-align: center; z-index: 100; }
-        @keyframes pulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+        
+        /* Движущийся фон */
+        .background-layer { position: absolute; width: 200%; height: 100%; top: 0; left: 0; animation: scrollBackground 3s linear infinite; opacity: 0.3; }
+        @keyframes scrollBackground { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .bg-element { position: absolute; font-size: 24px; opacity: 0.5; }
+        
+        /* Земля */
+        .ground { position: absolute; bottom: 0; left: 0; width: 200%; height: 60px; background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%); animation: scrollGround 2s linear infinite; border-top: 3px solid #81C784; }
+        @keyframes scrollGround { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .ground.night-mode { background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%); }
+        
+        /* Котик фиксированный */
+        .cat-container { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
+        .cat { width: 100px; height: 100px; transition: transform 0.1s; }
+        .cat svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); }
+        .cat.jumping { animation: jump 0.8s ease; }
+        .cat.running { animation: run 0.4s infinite; }
+        @keyframes jump { 0%{transform:translateY(0) scale(1,1)} 20%{transform:translateY(0) scale(0.9,1.1)} 40%{transform:translateY(-120px) scale(1,1)} 60%{transform:translateY(-120px) scale(1,1)} 80%{transform:translateY(0) scale(1.1,0.9)} 100%{transform:translateY(0) scale(1,1)} }
+        @keyframes run { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        
+        /* Яблоки */
+        .apple { position: absolute; width: 40px; height: 40px; font-size: 35px; z-index: 8; pointer-events: none; }
+        .apple-top { top: -50px; animation: fallDown 3s linear forwards; }
+        .apple-bottom { bottom: 70px; animation: floatUp 3s linear forwards; }
+        @keyframes fallDown { 0% { top: -50px; opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        @keyframes floatUp { 0% { bottom: 70px; opacity: 1; } 100% { bottom: 100%; opacity: 0; } }
+        
+        /* Препятствия */
+        .obstacle { position: absolute; width: 50px; height: 50px; font-size: 45px; bottom: 60px; z-index: 9; pointer-events: none; }
+        .obstacle-left { left: -60px; animation: moveRight 2.5s linear forwards; }
+        @keyframes moveRight { 0% { left: -60px; } 100% { left: 100%; } }
+        
+        /* Эффекты */
+        .sparkle { position: absolute; width: 25px; height: 25px; pointer-events: none; animation: sparkleAnim 0.8s ease-out forwards; z-index: 20; }
+        @keyframes sparkleAnim { 0%{transform:scale(0) rotate(0deg); opacity:1} 100%{transform:scale(1.5) rotate(180deg); opacity:0} }
+        .jump-effect { position: absolute; width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none; animation: jumpPulse 0.5s ease-out forwards; z-index: 15; transform: translate(-50%, -50%); bottom: 60px; left: 50%; }
+        @keyframes jumpPulse { 0%{transform:translate(-50%,-50%) scale(0.3); opacity:1} 100%{transform:translate(-50%,-50%) scale(2); opacity:0} }
+        .score-popup { position: absolute; color: #FFD700; font-size: 28px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none; animation: scoreFloat 1s ease-out forwards; z-index: 25; }
+        @keyframes scoreFloat { 0%{transform:translateY(0) scale(1); opacity:1} 100%{transform:translateY(-50px) scale(1.3); opacity:0} }
+        
+        /* Звёзды для ночи */
         .stars { position: absolute; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
         .night-mode .stars { opacity: 1; }
         .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 2s infinite; }
         @keyframes twinkle { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
-        .cat { position: absolute; width: 100px; height: 100px; transition: left 0.1s linear, top 0.1s linear; z-index: 10; pointer-events: none; }
-        .cat svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); transition: filter 0.3s ease; }
-        .cat.walking { animation: bounce 0.5s infinite; }
-        .cat.jumping { animation: jump 0.8s ease; }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes jump { 0%{transform:translateY(0) scale(1,1)} 20%{transform:translateY(0) scale(0.9,1.1)} 40%{transform:translateY(-80px) scale(1,1)} 60%{transform:translateY(-80px) scale(1,1)} 80%{transform:translateY(0) scale(1.1,0.9)} 100%{transform:translateY(0) scale(1,1)} }
-        .sparkle { position: absolute; width: 20px; height: 20px; pointer-events: none; animation: sparkleAnim 1s ease-out forwards; z-index: 20; }
-        @keyframes sparkleAnim { 0%{transform:scale(0) rotate(0deg); opacity:1} 100%{transform:scale(1.5) rotate(180deg); opacity:0} }
-        .paw-print { position: absolute; width: 25px; height: 25px; pointer-events: none; opacity: 0.6; animation: fadeOut 3s forwards; z-index: 5; }
-        @keyframes fadeOut { 0%{opacity:0.6} 100%{opacity:0} }
-        .apple { position: absolute; width: 35px; height: 35px; pointer-events: none; z-index: 8; animation: appleFloat 2s infinite; }
-        @keyframes appleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        
+        /* Подсказка */
+        .tap-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.9); font-size: 18px; pointer-events: none; animation: pulse 2s infinite; text-align: center; z-index: 100; }
+        @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        
+        /* Кнопки */
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .btn-row { display: flex; gap: 10px; justify-content: center; }
         button { padding: 12px 15px; font-size: 16px; border: none; border-radius: 15px; cursor: pointer; background: white; color: #764ba2; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.2s ease; flex: 1; min-width: 80px; -webkit-appearance: none; appearance: none; }
@@ -56,7 +76,11 @@
         #btnNight { background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%); color: white; }
         #btnSound { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         #btnReset { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        #btnStart { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; grid-column: span 2; font-size: 20px; padding: 15px; }
+        
         .info { color: white; margin-top: 10px; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); padding: 0 10px; line-height: 1.4; min-height: 40px; }
+        
+        /* Цвета котика */
         .cat-green .cat-body { fill: #7FD47F !important; }
         .cat-green .cat-dark { stroke: #4A9A50 !important; }
         .cat-green .cat-light { fill: #98E098 !important; }
@@ -71,75 +95,66 @@
         .cat-blue .cat-eyes { fill: #003060 !important; }
         .cat-rainbow { animation: rainbow 3s linear infinite; }
         @keyframes rainbow { 0%{filter:hue-rotate(0deg) drop-shadow(0 10px 20px rgba(0,0,0,0.3))} 100%{filter:hue-rotate(360deg) drop-shadow(0 10px 20px rgba(0,0,0,0.3))} }
-        .apple-collected { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px 40px; border-radius: 20px; font-size: 24px; font-weight: bold; box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: popIn 0.5s ease-out forwards; z-index: 100; pointer-events: none; }
-        @keyframes popIn { 0%{transform:translate(-50%,-50%) scale(0); opacity:0} 50%{transform:translate(-50%,-50%) scale(1.1)} 100%{transform:translate(-50%,-50%) scale(1); opacity:1} }
-        .jump-effect { position: absolute; width: 60px; height: 60px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none; animation: jumpPulse 0.5s ease-out forwards; z-index: 15; transform: translate(-50%, -50%); }
-        @keyframes jumpPulse { 0%{transform:translate(-50%,-50%) scale(0.3); opacity:1} 100%{transform:translate(-50%,-50%) scale(2); opacity:0} }
-        @media (max-width:400px) { .scene{height:300px} .cat{width:80px;height:80px} button{padding:10px 12px;font-size:14px;min-width:70px} .info{font-size:13px} }
-        @media (max-height:500px) and (orientation:landscape) { .scene{height:200px;margin-bottom:10px} .cat{width:60px;height:60px} .zone-hint{font-size:18px} }
+        
+        /* Game Over */
+        .game-over { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .game-over.show { display: flex; }
+        .game-over-content { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .game-over h2 { font-size: 32px; margin: 0 0 20px 0; }
+        .game-over p { font-size: 20px; margin: 10px 0; }
+        .game-over button { margin-top: 20px; background: white; color: #764ba2; font-size: 18px; padding: 15px 40px; }
+        
+        @media (max-width:400px) { .scene{height:350px} .cat{width:80px;height:80px} button{padding:10px 12px;font-size:14px} }
+        @media (max-height:500px) and (orientation:landscape) { .scene{height:250px} .cat{width:60px;height:60px} }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="stats">
             <div class="stat-item">⏱️ Время <span class="stat-value" id="timer">0:00</span></div>
-            <div class="stat-item">🦘 Прыжки <span class="stat-value" id="jumpCount">0</span></div>
-            <div class="stat-item">🍎 Яблоки <span class="stat-value" id="appleCount">0</span></div>
+            <div class="stat-item">🍎 Счёт <span class="stat-value" id="score">0</span></div>
+            <div class="stat-item">🏃 Дистанция <span class="stat-value" id="distance">0м</span></div>
         </div>
         <div class="scene" id="scene">
             <div class="stars" id="stars"></div>
-            
-            <!-- Зоны управления -->
-            <div class="control-zone zone-up" id="zoneUp"></div>
-            <div class="control-zone zone-down" id="zoneDown"></div>
-            <div class="control-zone zone-left" id="zoneLeft"></div>
-            <div class="control-zone zone-right" id="zoneRight"></div>
-            <div class="control-zone zone-center" id="zoneCenter"></div>
-            
-            <!-- Подсказки -->
-            <div class="zone-hint hint-up">⬆️</div>
-            <div class="zone-hint hint-down">⬇️</div>
-            <div class="zone-hint hint-left">⬅️</div>
-            <div class="zone-hint hint-right">➡️</div>
-            <div class="zone-hint hint-center">🦘 ПРЫЖОК</div>
-            
-            <div class="tap-hint" id="tapHint">
-                👆 Тапай по зонам!<br>
-                <small>Центр = прыжок</small>
-            </div>
-            
-            <div class="cat cat-green" id="cat">
-                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="100" cy="185" rx="60" ry="10" fill="rgba(0,0,0,0.2)"/>
-                    <path class="cat-tail" d="M 145 120 Q 170 110 175 90 Q 180 70 165 65 Q 155 62 150 75 Q 148 80 150 85 Q 153 92 148 100 Q 145 108 145 120" fill="#5DBB63" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse class="cat-body" cx="100" cy="130" rx="55" ry="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse class="cat-light" cx="100" cy="130" rx="40" ry="35" fill="#98E098"/>
-                    <ellipse class="cat-body" cx="70" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse class="cat-body" cx="100" cy="175" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <ellipse class="cat-body" cx="130" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <circle class="cat-body" cx="100" cy="85" r="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <path class="cat-body" d="M 60 60 L 50 25 L 85 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <path class="cat-body" d="M 140 60 L 150 25 L 115 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
-                    <path class="cat-light" d="M 63 55 L 57 35 L 75 47 Z" fill="#98E098"/>
-                    <path class="cat-light" d="M 137 55 L 143 35 L 125 47 Z" fill="#98E098"/>
-                    <ellipse cx="82" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
-                    <ellipse cx="118" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
-                    <circle class="cat-eyes" cx="84" cy="82" r="6" fill="#2D5A2D"/>
-                    <circle class="cat-eyes" cx="120" cy="82" r="6" fill="#2D5A2D"/>
-                    <circle cx="86" cy="80" r="2" fill="white"/>
-                    <circle cx="122" cy="80" r="2" fill="white"/>
-                    <path d="M 95 95 L 105 95 L 100 100 Z" fill="#FFB6C1" stroke="#4A9A50" stroke-width="1"/>
-                    <path class="cat-dark" d="M 85 105 Q 92 110 100 105 Q 108 110 115 105" stroke="#2D5A2D" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <line class="cat-dark" x1="55" y1="95" x2="75" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
-                    <line class="cat-dark" x1="55" y1="102" x2="75" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
-                    <line class="cat-dark" x1="145" y1="95" x2="125" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
-                    <line class="cat-dark" x1="145" y1="102" x2="125" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
-                    <ellipse class="cat-light" cx="70" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
-                    <ellipse class="cat-light" cx="130" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
-                </svg>
+            <div class="background-layer" id="bgLayer"></div>
+            <div class="ground" id="ground"></div>
+            <div class="tap-hint" id="tapHint">👆 Тапай чтобы прыгать!<br><small>Лови 🍎 избегай 🌵</small></div>
+            <div class="cat-container">
+                <div class="cat cat-green" id="cat">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="100" cy="185" rx="60" ry="10" fill="rgba(0,0,0,0.2)"/>
+                        <path class="cat-tail" d="M 145 120 Q 170 110 175 90 Q 180 70 165 65 Q 155 62 150 75 Q 148 80 150 85 Q 153 92 148 100 Q 145 108 145 120" fill="#5DBB63" stroke="#4A9A50" stroke-width="2"/>
+                        <ellipse class="cat-body" cx="100" cy="130" rx="55" ry="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <ellipse class="cat-light" cx="100" cy="130" rx="40" ry="35" fill="#98E098"/>
+                        <ellipse class="cat-body" cx="70" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <ellipse class="cat-body" cx="100" cy="175" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <ellipse class="cat-body" cx="130" cy="170" rx="12" ry="10" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <circle class="cat-body" cx="100" cy="85" r="50" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <path class="cat-body" d="M 60 60 L 50 25 L 85 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <path class="cat-body" d="M 140 60 L 150 25 L 115 45 Z" fill="#7FD47F" stroke="#4A9A50" stroke-width="2"/>
+                        <path class="cat-light" d="M 63 55 L 57 35 L 75 47 Z" fill="#98E098"/>
+                        <path class="cat-light" d="M 137 55 L 143 35 L 125 47 Z" fill="#98E098"/>
+                        <ellipse cx="82" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
+                        <ellipse cx="118" cy="80" rx="10" ry="12" fill="white" stroke="#4A9A50" stroke-width="1.5"/>
+                        <circle class="cat-eyes" cx="84" cy="82" r="6" fill="#2D5A2D"/>
+                        <circle class="cat-eyes" cx="120" cy="82" r="6" fill="#2D5A2D"/>
+                        <circle cx="86" cy="80" r="2" fill="white"/>
+                        <circle cx="122" cy="80" r="2" fill="white"/>
+                        <path d="M 95 95 L 105 95 L 100 100 Z" fill="#FFB6C1" stroke="#4A9A50" stroke-width="1"/>
+                        <path class="cat-dark" d="M 85 105 Q 92 110 100 105 Q 108 110 115 105" stroke="#2D5A2D" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        <line class="cat-dark" x1="55" y1="95" x2="75" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                        <line class="cat-dark" x1="55" y1="102" x2="75" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                        <line class="cat-dark" x1="145" y1="95" x2="125" y2="98" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                        <line class="cat-dark" x1="145" y1="102" x2="125" y2="103" stroke="#4A9A50" stroke-width="1.5" stroke-linecap="round"/>
+                        <ellipse class="cat-light" cx="70" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
+                        <ellipse class="cat-light" cx="130" cy="95" rx="8" ry="5" fill="#98E098" opacity="0.6"/>
+                    </svg>
+                </div>
             </div>
         </div>
         <div class="controls">
+            <button onclick="startGame()" id="btnStart">▶️ НАЧАТЬ ИГРУ</button>
             <div class="btn-row">
                 <button onclick="changeColor()" id="btnColor">🎨 Цвет</button>
                 <button onclick="toggleNight()" id="btnNight">🌙 Ночь</button>
@@ -149,44 +164,80 @@
                 <button onclick="resetGame()" id="btnReset">🔄 Сброс</button>
             </div>
         </div>
-        <div class="info" id="info">Тапай по зонам для движения! 🐱💚</div>
+        <div class="info" id="info">Нажми СТАРТ и тапай чтобы прыгать! 🐱💚</div>
     </div>
+    
+    <!-- Game Over экран -->
+    <div class="game-over" id="gameOver">
+        <div class="game-over-content">
+            <h2> Игра Окончена!</h2>
+            <p>🍎 Счёт: <span id="finalScore">0</span></p>
+            <p>⏱️ Время: <span id="finalTime">0:00</span></p>
+            <p>🏃 Дистанция: <span id="finalDistance">0м</span></p>
+            <button onclick="restartGame()">🔄 Играть снова</button>
+        </div>
+    </div>
+
     <script>
-        const cat = document.getElementById('cat'), info = document.getElementById('info'), scene = document.getElementById('scene'), timerEl = document.getElementById('timer'), jumpCountEl = document.getElementById('jumpCount'), appleCountEl = document.getElementById('appleCount'), starsEl = document.getElementById('stars'), tapHint = document.getElementById('tapHint');
-        const zoneUp = document.getElementById('zoneUp'), zoneDown = document.getElementById('zoneDown'), zoneLeft = document.getElementById('zoneLeft'), zoneRight = document.getElementById('zoneRight'), zoneCenter = document.getElementById('zoneCenter');
+        const cat = document.getElementById('cat'), info = document.getElementById('info'), scene = document.getElementById('scene'), timerEl = document.getElementById('timer'), scoreEl = document.getElementById('score'), distanceEl = document.getElementById('distance'), starsEl = document.getElementById('stars'), tapHint = document.getElementById('tapHint'), gameOverScreen = document.getElementById('gameOver');
         
-        let posX = 50, posY = 50, animationId = null, isJumping = false, speed = 0.6, jumpCount = 0, appleCount = 0, startTime = null, timerInterval = null, isNightMode = false, isSoundOn = true, colorMode = 0, apples = [], pawPrints = [], isMoving = false, moveDirection = {x: 0, y: 0}, lastTapTime = 0;
+        let isJumping = false, isGameRunning = false, score = 0, distance = 0, startTime = null, timerInterval = null, distanceInterval = null, appleInterval = null, obstacleInterval = null, isNightMode = false, isSoundOn = true, colorMode = 0, apples = [], obstacles = [], animationId = null;
+        let audioCtx;
         
-        function loadProgress() { try { const saved = localStorage.getItem('catGameProgress'); if (saved) { const data = JSON.parse(saved); jumpCount = data.jumpCount || 0; appleCount = data.appleCount || 0; isNightMode = data.nightMode || false; isSoundOn = data.soundOn !== false; colorMode = data.colorMode || 0; updateStats(); applyColorMode(); if (isNightMode) document.body.classList.add('night-mode'); }} catch(e) {} }
-        function saveProgress() { try { localStorage.setItem('catGameProgress', JSON.stringify({ jumpCount, appleCount, nightMode: isNightMode, soundOn: isSoundOn, colorMode })); } catch(e) {} }
-        function startTimer() { if (!startTime) { startTime = Date.now(); timerInterval = setInterval(() => { const elapsed = Math.floor((Date.now() - startTime) / 1000); timerEl.textContent = Math.floor(elapsed/60) + ':' + (elapsed%60).toString().padStart(2,'0'); }, 1000); } }
-        function updateStats() { jumpCountEl.textContent = jumpCount; appleCountEl.textContent = appleCount; }
+        function loadProgress() { try { const saved = localStorage.getItem('catRunnerProgress'); if (saved) { const data = JSON.parse(saved); isNightMode = data.nightMode || false; isSoundOn = data.soundOn !== false; colorMode = data.colorMode || 0; applyColorMode(); if (isNightMode) document.body.classList.add('night-mode'); }} catch(e) {} }
+        function saveProgress() { try { localStorage.setItem('catRunnerProgress', JSON.stringify({ nightMode: isNightMode, soundOn: isSoundOn, colorMode })); } catch(e) {} }
+        
         function createStars() { starsEl.innerHTML = ''; for (let i = 0; i < 50; i++) { const star = document.createElement('div'); star.className = 'star'; star.style.left = Math.random()*100+'%'; star.style.top = Math.random()*100+'%'; star.style.width = (Math.random()*3+1)+'px'; star.style.height = star.style.width; star.style.animationDelay = Math.random()*2+'s'; starsEl.appendChild(star); } }
-        function spawnApple() { if (apples.length >= 3) return; const apple = document.createElement('div'); apple.className = 'apple'; apple.innerHTML = '🍎'; apple.style.left = (10+Math.random()*80)+'%'; apple.style.top = (20+Math.random()*60)+'%'; scene.appendChild(apple); apples.push(apple); setTimeout(() => checkAppleCollection(apple), 100); }
-        function checkAppleCollection(apple) { const checkInterval = setInterval(() => { if (!apple.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(), appleRect = apple.getBoundingClientRect(); if (catRect.left < appleRect.right && catRect.right > appleRect.left && catRect.top < appleRect.bottom && catRect.bottom > appleRect.top) { apple.remove(); apples = apples.filter(a => a !== apple); appleCount++; updateStats(); saveProgress(); showAppleCollected(); createSparkles(appleRect.left, appleRect.top); if (isSoundOn) playSound('collect'); clearInterval(checkInterval); } }, 100); }
-        function showAppleCollected() { const msg = document.createElement('div'); msg.className = 'apple-collected'; msg.textContent = '🍎 +1!'; document.body.appendChild(msg); setTimeout(() => msg.remove(), 1000); }
-        function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 1000); } }
-        function createPawPrint() { if (!isMoving || isJumping) return; const paw = document.createElement('div'); paw.className = 'paw-print'; paw.innerHTML = '🐾'; paw.style.left = posX + '%'; paw.style.top = posY + '%'; scene.appendChild(paw); pawPrints.push(paw); if (pawPrints.length > 5) { pawPrints[0].remove(); pawPrints.shift(); } setTimeout(() => { if (paw.parentNode) { paw.remove(); pawPrints = pawPrints.filter(p => p !== paw); } }, 3000); }
-        function createJumpEffect(x, y) { const effect = document.createElement('div'); effect.className = 'jump-effect'; effect.style.left = x + 'px'; effect.style.top = y + 'px'; scene.appendChild(effect); setTimeout(() => effect.remove(), 500); }
-        let audioCtx; function playSound(type) { if (!isSoundOn) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'jump') { osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.3); } else if (type === 'collect') { osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2); } } catch(e) {} }
+        
+        function createBackground() { const bg = document.getElementById('bgLayer'); bg.innerHTML = ''; const elements = ['🌳', '🌲', '🏠', '️', '', '🌸']; for (let i = 0; i < 15; i++) { const el = document.createElement('div'); el.className = 'bg-element'; el.textContent = elements[Math.floor(Math.random() * elements.length)]; el.style.left = (i * 7) + '%'; el.style.top = (10 + Math.random() * 40) + '%'; bg.appendChild(el); } }
+        
+        function startTimer() { if (!startTime) { startTime = Date.now(); timerInterval = setInterval(() => { const elapsed = Math.floor((Date.now() - startTime) / 1000); timerEl.textContent = Math.floor(elapsed/60) + ':' + (elapsed%60).toString().padStart(2,'0'); }, 1000); } }
+        
+        function startDistance() { if (!distanceInterval) { distanceInterval = setInterval(() => { distance += 10; distanceEl.textContent = distance + 'м'; }, 100); } }
+        
+        function spawnApple() { if (!isGameRunning) return; const apple = document.createElement('div'); apple.className = 'apple'; apple.innerHTML = '🍎'; const fromTop = Math.random() > 0.5; if (fromTop) { apple.classList.add('apple-top'); apple.style.left = (20 + Math.random() * 60) + '%'; } else { apple.classList.add('apple-bottom'); apple.style.left = (20 + Math.random() * 60) + '%'; } scene.appendChild(apple); apples.push(apple); checkAppleCollection(apple); setTimeout(() => { if (apple.parentNode) { apple.remove(); apples = apples.filter(a => a !== apple); } }, 3000); }
+        
+        function checkAppleCollection(apple) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!apple.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const appleRect = apple.getBoundingClientRect(); if (catRect.left < appleRect.right && catRect.right > appleRect.left && catRect.top < appleRect.bottom && catRect.bottom > appleRect.top) { apple.remove(); apples = apples.filter(a => a !== apple); score += 10; scoreEl.textContent = score; showScorePopup(appleRect.left, appleRect.top); createSparkles(appleRect.left, appleRect.top); if (isSoundOn) playSound('collect'); clearInterval(checkInterval); } }, 100); }
+        
+        function showScorePopup(x, y) { const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = '+10'; popup.style.left = x + 'px'; popup.style.top = y + 'px'; document.body.appendChild(popup); setTimeout(() => popup.remove(), 1000); }
+        
+        function spawnObstacle() { if (!isGameRunning) return; const obstacle = document.createElement('div'); obstacle.className = 'obstacle obstacle-left'; obstacle.innerHTML = Math.random() > 0.5 ? '🌵' : '🪨'; obstacle.style.bottom = (60 + Math.random() * 20) + 'px'; scene.appendChild(obstacle); obstacles.push(obstacle); checkObstacleCollision(obstacle); setTimeout(() => { if (obstacle.parentNode) { obstacle.remove(); obstacles = obstacles.filter(o => o !== obstacle); } }, 2500); }
+        
+        function checkObstacleCollision(obstacle) { const checkInterval = setInterval(() => { if (!isGameRunning) { clearInterval(checkInterval); return; } if (!obstacle.parentNode) { clearInterval(checkInterval); return; } const catRect = cat.getBoundingClientRect(); const obsRect = obstacle.getBoundingClientRect(); if (catRect.left < obsRect.right - 20 && catRect.right > obsRect.left + 20 && catRect.top < obsRect.bottom && catRect.bottom > obsRect.top) { gameOver(); clearInterval(checkInterval); } }, 100); }
+        
+        function createSparkles(x, y) { for (let i = 0; i < 8; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; sparkle.innerHTML = '✨'; sparkle.style.left = (x+Math.random()*40-20)+'px'; sparkle.style.top = (y+Math.random()*40-20)+'px'; sparkle.style.animationDelay = (i*0.1)+'s'; document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 800); } }
+        
+        function createJumpEffect() { const effect = document.createElement('div'); effect.className = 'jump-effect'; effect.style.left = '50%'; effect.style.bottom = '60px'; scene.appendChild(effect); setTimeout(() => effect.remove(), 500); }
+        
+        function playSound(type) { if (!isSoundOn) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'jump') { osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.3); } else if (type === 'collect') { osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2); } else if (type === 'gameover') { osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.5); } } catch(e) {} }
+        
         function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} } }
-        function animate() { if (isMoving && !isJumping && (moveDirection.x !== 0 || moveDirection.y !== 0)) { posX += moveDirection.x * speed; posY += moveDirection.y * speed; if (posX < 5) { posX = 5; moveDirection.x = 0; } else if (posX > 95) { posX = 95; moveDirection.x = 0; } if (posY < 5) { posY = 5; moveDirection.y = 0; } else if (posY > 95) { posY = 95; moveDirection.y = 0; } cat.style.left = posX + '%'; cat.style.top = posY + '%'; if (moveDirection.x < 0) { cat.style.transform = 'scaleX(-1)'; } else if (moveDirection.x > 0) { cat.style.transform = 'scaleX(1)'; } if (Math.abs(moveDirection.x) > 0 || Math.abs(moveDirection.y) > 0) { cat.classList.add('walking'); if (Math.random() < 0.08) createPawPrint(); } animationId = requestAnimationFrame(animate); } else { cat.classList.remove('walking'); isMoving = false; } }
-        function setDirection(x, y) { startTimer(); tapHint.style.display = 'none'; moveDirection = {x, y}; if (!isJumping) { isMoving = true; animate(); } const dirText = ['Стоит', 'Вправо', 'Влево', 'Вниз', 'Вверх']; let text = 'Движение...'; if (x === 0 && y === 0) text = 'Стоит 😺'; else if (x > 0 && y === 0) text = 'Вправо ➡️'; else if (x < 0 && y === 0) text = 'Влево ⬅️'; else if (x === 0 && y > 0) text = 'Вниз ⬇️'; else if (x === 0 && y < 0) text = 'Вверх ⬆️'; else text = 'Движение 🐾'; info.textContent = text; }
-        function doJump(clientX, clientY) { if (isJumping) return; startTimer(); isJumping = true; jumpCount++; updateStats(); saveProgress(); cat.classList.remove('walking'); cat.classList.add('jumping'); info.textContent = 'Прыжок! 🐱⬆️'; const catRect = cat.getBoundingClientRect(); createSparkles(catRect.left + 50, catRect.top + 50); createJumpEffect(clientX || catRect.left + 50, clientY || catRect.top + 50); vibrate([50,30,50]); if (isSoundOn) playSound('jump'); setTimeout(() => { cat.classList.remove('jumping'); isJumping = false; info.textContent = 'Приземлился! 😺'; }, 800); }
-        function handleTouch(e) { e.preventDefault(); const rect = scene.getBoundingClientRect(); const touch = e.touches ? e.touches[0] : e; const x = touch.clientX - rect.left; const y = touch.clientY - rect.top; const percentX = (x / rect.width) * 100; const percentY = (y / rect.height) * 100; const now = Date.now(); if (percentX >= 25 && percentX <= 75 && percentY >= 30 && percentY <= 70) { if (now - lastTapTime < 300) { doJump(x, y); } lastTapTime = now; return; } if (percentY < 30) { setDirection(0, -1); highlightZone(zoneUp); } else if (percentY > 70) { setDirection(0, 1); highlightZone(zoneDown); } else if (percentX < 25) { setDirection(-1, 0); highlightZone(zoneLeft); } else if (percentX > 75) { setDirection(1, 0); highlightZone(zoneRight); } }
-        function highlightZone(zone) { [zoneUp, zoneDown, zoneLeft, zoneRight, zoneCenter].forEach(z => z.classList.remove('active')); zone.classList.add('active'); setTimeout(() => zone.classList.remove('active'), 200); }
-        scene.addEventListener('touchstart', handleTouch, {passive: false});
-        scene.addEventListener('mousedown', handleTouch);
-        scene.addEventListener('touchend', function(e) { e.preventDefault(); }, {passive: false});
-        function changeColor() { colorMode = (colorMode + 1) % 4; applyColorMode(); saveProgress(); const colors = ['Зелёный 💚', 'Красный ❤️', 'Синий 💙', 'Радуга 🌈']; info.textContent = 'Цвет: ' + colors[colorMode]; }
+        
+        function doJump() { if (!isGameRunning || isJumping) return; isJumping = true; cat.classList.add('jumping'); cat.classList.remove('running'); info.textContent = 'Прыжок! 🐱️'; createJumpEffect(); if (isSoundOn) playSound('jump'); vibrate([50,30,50]); setTimeout(() => { cat.classList.remove('jumping'); if (isGameRunning) cat.classList.add('running'); isJumping = false; info.textContent = 'Лови яблоки! 🍎'; }, 800); }
+        
+        function startGame() { if (isGameRunning) return; isGameRunning = true; score = 0; distance = 0; startTime = null; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; tapHint.style.display = 'none'; gameOverScreen.classList.remove('show'); cat.classList.add('running'); startTimer(); startDistance(); appleInterval = setInterval(spawnApple, 1500); obstacleInterval = setInterval(spawnObstacle, 2000); info.textContent = 'Лови 🍎 избегай 🌵!'; }
+        
+        function gameOver() { isGameRunning = false; cat.classList.remove('running'); clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); if (isSoundOn) playSound('gameover'); vibrate([100,50,100,50,100]); document.getElementById('finalScore').textContent = score; document.getElementById('finalTime').textContent = timerEl.textContent; document.getElementById('finalDistance').textContent = distanceEl.textContent; gameOverScreen.classList.add('show'); }
+        
+        function restartGame() { gameOverScreen.classList.remove('show'); apples.forEach(a => a.remove()); apples = []; obstacles.forEach(o => o.remove()); obstacles = []; startGame(); }
+        
+        function resetGame() { isGameRunning = false; clearInterval(timerInterval); clearInterval(distanceInterval); clearInterval(appleInterval); clearInterval(obstacleInterval); apples.forEach(a => a.remove()); apples = []; obstacles.forEach(o => o.remove()); obstacles = []; score = 0; distance = 0; scoreEl.textContent = '0'; distanceEl.textContent = '0м'; timerEl.textContent = '0:00'; cat.classList.remove('running', 'jumping'); tapHint.style.display = 'block'; info.textContent = 'Нажми СТАРТ и тапай чтобы прыгать! 🐱💚'; gameOverScreen.classList.remove('show'); }
+        
+        function changeColor() { colorMode = (colorMode + 1) % 4; applyColorMode(); saveProgress(); const colors = ['Зелёный 💚', 'Красный ❤️', 'Синий 💙', 'Радуга 🌈']; info.textContent = isGameRunning ? 'Цвет: ' + colors[colorMode] : 'Нажми СТАРТ!'; }
+        
         function applyColorMode() { cat.classList.remove('cat-green', 'cat-red', 'cat-blue', 'cat-rainbow'); if (colorMode === 0) cat.classList.add('cat-green'); else if (colorMode === 1) cat.classList.add('cat-red'); else if (colorMode === 2) cat.classList.add('cat-blue'); else if (colorMode === 3) cat.classList.add('cat-rainbow'); }
-        function toggleNight() { isNightMode = !isNightMode; document.body.classList.toggle('night-mode', isNightMode); scene.classList.toggle('night-mode', isNightMode); saveProgress(); info.textContent = isNightMode ? 'Ночной режим 🌙⭐' : 'Дневной режим ☀️'; }
-        function toggleSound() { isSoundOn = !isSoundOn; document.getElementById('btnSound').textContent = isSoundOn ? '🔊 Звук' : '🔇 Тихо'; saveProgress(); info.textContent = isSoundOn ? 'Звук включен 🔊' : 'Звук выключен 🔇'; }
-        function stopCat() { moveDirection = {x: 0, y: 0}; isMoving = false; cat.classList.remove('walking'); info.textContent = 'Котик остановился 😺'; if (animationId) cancelAnimationFrame(animationId); }
-        function resetGame() { stopCat(); posX = 50; posY = 50; cat.style.left = posX + '%'; cat.style.top = posY + '%'; cat.style.transform = 'scaleX(1)'; apples.forEach(a => a.remove()); apples = []; pawPrints.forEach(p => p.remove()); pawPrints = []; jumpCount = 0; appleCount = 0; startTime = null; if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } timerEl.textContent = '0:00'; updateStats(); localStorage.removeItem('catGameProgress'); tapHint.style.display = 'block'; info.textContent = 'Всё сброшено! 🐱💚'; }
-        setInterval(() => { if (Math.random() < 0.3) spawnApple(); }, 5000);
+        
+        function toggleNight() { isNightMode = !isNightMode; document.body.classList.toggle('night-mode', isNightMode); scene.classList.toggle('night-mode', isNightMode); document.getElementById('ground').classList.toggle('night-mode', isNightMode); saveProgress(); info.textContent = isNightMode ? 'Ночной режим 🌙⭐' : 'Дневной режим ☀️'; }
+        
+        function toggleSound() { isSoundOn = !isSoundOn; document.getElementById('btnSound').textContent = isSoundOn ? '🔊 Звук' : '🔇 Тихо'; saveProgress(); }
+        
+        scene.addEventListener('touchstart', function(e) { e.preventDefault(); if (isGameRunning) doJump(); }, {passive: false});
+        scene.addEventListener('mousedown', function(e) { if (isGameRunning) doJump(); });
+        scene.addEventListener('touchend', function(e) { e.preventDefault(); }, {passive: false});
+        
         let lastTouchEnd = 0; document.addEventListener('touchend', function(event) { const now = Date.now(); if (now - lastTouchEnd <= 300) event.preventDefault(); lastTouchEnd = now; }, false);
-        window.onload = function() { loadProgress(); createStars(); info.textContent = 'Тапай по зонам для движения! 🐱💚'; };
+        
+        window.onload = function() { loadProgress(); createStars(); createBackground(); info.textContent = 'Нажми СТАРТ и тапай чтобы прыгать! 🐱💚'; };
         window.addEventListener('beforeunload', saveProgress);
     </script>
 </body>
