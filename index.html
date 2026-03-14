@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Cat Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .cat {
+            width: 100px;
+            height: 100px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .cat:hover {
+            transform: scale(1.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Interactive Cat Game!</h1>
+    <div class="cat" id="cat"></div>
+    <button id="playButton">Play</button>
+    <audio id="meowSound" src="meow.mp3" preload="auto"></audio>
+
+    <script>
+        const cat = document.getElementById('cat');
+        const playButton = document.getElementById('playButton');
+        const meowSound = document.getElementById('meowSound');
+
+        cat.addEventListener('click', () => {
+            playMeow();
+            changeCatPosition();
+        });
+
+        playButton.addEventListener('click', () => {
+            alert("Let's play!");
+            playButton.disabled = true;
+            setTimeout(() => {
+                playButton.disabled = false;
+            }, 5000);
+        });
+
+        function playMeow() {
+            meowSound.play().catch(error => {
+                console.error("Error playing sound:", error);
+            });
+        }
+
+        function changeCatPosition() {
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 100);
+            cat.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    </script>
+</body>
+</html>
